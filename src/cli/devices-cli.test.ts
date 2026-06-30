@@ -1215,7 +1215,7 @@ describe("devices cli local fallback", () => {
     expect(approveDevicePairing).not.toHaveBeenCalled();
   });
 
-  it("keeps unknown requestId behavior when neither the original nor replacement request remains pending", async () => {
+  it("explains how to recover when neither the original nor replacement request remains pending", async () => {
     rejectGatewayForLocalFallback("scope upgrade pending approval (requestId: req-new)");
     rejectGatewayForLocalFallback("scope upgrade pending approval (requestId: req-new)");
     listDevicePairing
@@ -1253,9 +1253,29 @@ describe("devices cli local fallback", () => {
 
     await runDevicesApprove(["req-old"]);
 
-    expect(runtime.error).toHaveBeenCalledWith("unknown requestId");
+    const errorOutput = stripAnsi(readRuntimeErrorOutput());
+    expect(errorOutput).toContain("No pending request matches");
+    expect(errorOutput).toContain("openclaw devices approve --latest");
+    expect(errorOutput).not.toContain("unknown requestId");
     expect(runtime.exit).toHaveBeenCalledWith(1);
     expect(approveDevicePairing).not.toHaveBeenCalled();
+  });
+
+  it("surfaces owner-credential guidance when the device can't approve its own upgrade", async () => {
+    // Explicit --url disables the loopback local fallback, so the scope-upgrade
+    // denial propagates as the authorization error the user must resolve. The
+    // first rejection is consumed by the pre-approve context lookup, the second
+    // by the approve call itself.
+    rejectGatewayForLocalFallback("scope upgrade pending approval (requestId: req-remote)");
+    rejectGatewayForLocalFallback("scope upgrade pending approval (requestId: req-remote)");
+
+    await runDevicesApprove(["req-remote", "--url", "wss://gateway.example.com/ws"]);
+
+    const errorOutput = stripAnsi(readRuntimeErrorOutput());
+    expect(errorOutput).toContain("operator.approvals");
+    expect(errorOutput).toContain("--token");
+    expect(errorOutput).toContain("openclaw devices list");
+    expect(runtime.exit).toHaveBeenCalledWith(1);
   });
 
   it("falls back to local pairing list when gateway returns a scope upgrade message on loopback", async () => {
@@ -1292,14 +1312,16 @@ describe("devices cli local fallback", () => {
     expect(readRuntimeOutput()).not.toContain(fallbackNotice);
   });
 
-  it("keeps unknown requestId behavior instead of approving a different local request", async () => {
+  it("explains recovery instead of approving a different local request", async () => {
     rejectGatewayForLocalFallback("device pairing required (requestId: req-profile)");
     rejectGatewayForLocalFallback("device pairing required (requestId: req-profile)");
 
     await runDevicesApprove(["req-default"]);
 
     expect(approveDevicePairing).not.toHaveBeenCalled();
-    expect(runtime.error).toHaveBeenCalledWith("unknown requestId");
+    const errorOutput = stripAnsi(readRuntimeErrorOutput());
+    expect(errorOutput).toContain("No pending request matches");
+    expect(errorOutput).toContain("openclaw devices approve --latest");
     expect(runtime.exit).toHaveBeenCalledWith(1);
   });
 
