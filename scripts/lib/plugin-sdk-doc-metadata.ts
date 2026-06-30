@@ -48,6 +48,9 @@ export const pluginSdkDocMetadata = {
   "plugin-entry": {
     category: "core",
   },
+  "json-rpc-plugin": {
+    category: "runtime",
+  },
   "access-groups": {
     category: "channel",
   },

@@ -229,6 +229,7 @@ usage endpoint failed or returned no usable usage data.
     | `plugin-sdk/hook-runtime` | Shared webhook/internal hook pipeline helpers |
     | `plugin-sdk/lazy-runtime` | Lazy runtime import/binding helpers such as `createLazyRuntimeModule`, `createLazyRuntimeMethod`, and `createLazyRuntimeSurface` |
     | `plugin-sdk/process-runtime` | Process exec helpers |
+    | `plugin-sdk/json-rpc-plugin` | `defineJsonRpcPluginEntry` for stdio JSON-RPC child-process plugins that register static tool, hook, HTTP route, and Gateway method descriptors |
     | `plugin-sdk/cli-runtime` | CLI formatting, wait, version, argument-invocation, and lazy command-group helpers |
     | `plugin-sdk/qa-live-transport-scenarios` | Shared live transport QA scenario ids, baseline coverage helpers, and scenario-selection helper |
     | `plugin-sdk/gateway-method-runtime` | Reserved Gateway method dispatch helper for plugin HTTP routes that declare `contracts.gatewayMethodDispatch: ["authenticated-request"]` |

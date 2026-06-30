@@ -95,6 +95,7 @@
   "speech-core",
   "tts-runtime",
   "plugin-runtime",
+  "json-rpc-plugin",
   "skills-runtime",
   "channel-secret-basic-runtime",
   "channel-secret-runtime",

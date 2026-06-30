@@ -27,6 +27,10 @@ Bare package specs still install from npm during the launch cutover. Use the
 
 - Use Node 22.19 or newer and a package manager such as `npm` or `pnpm`.
 - Be familiar with TypeScript ESM modules.
+- Non-TypeScript plugin runtimes can use a small TypeScript entry file with
+  [`defineJsonRpcPluginEntry`](/plugins/sdk-entrypoints#definejsonrpcpluginentry)
+  to dispatch tool, hook, HTTP route, and Gateway method calls to a child
+  process over stdio JSON-RPC.
 - For in-repo bundled plugin work, clone the repository and run `pnpm install`.
   Source-checkout plugin development is pnpm-only because OpenClaw loads bundled
   plugins from `extensions/*` workspace packages.

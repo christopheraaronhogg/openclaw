@@ -6926,6 +6926,7 @@ Do not edit it by hand; run `pnpm docs:map:gen`.
 - Headings:
   - H2: defineToolPlugin
   - H2: definePluginEntry
+  - H2: defineJsonRpcPluginEntry
   - H2: defineChannelPluginEntry
   - H2: defineSetupPluginEntry
   - H2: Registration mode
@@ -8447,6 +8448,14 @@ Do not edit it by hand; run `pnpm docs:map:gen`.
   - H2: Signal setup (signal-cli)
   - H2: What the wizard writes
   - H2: Related docs
+
+## releases/index.md
+
+- Route: /releases
+- Headings:
+  - H1: Release notes
+  - H2: Coming soon
+  - H2: Raw release history
 
 ## security/CONTRIBUTING-THREAT-MODEL.md
 

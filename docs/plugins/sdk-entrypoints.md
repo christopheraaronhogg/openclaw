@@ -1,9 +1,9 @@
 ---
-summary: "Reference for defineToolPlugin, definePluginEntry, defineChannelPluginEntry, and defineSetupPluginEntry"
+summary: "Reference for defineToolPlugin, definePluginEntry, defineJsonRpcPluginEntry, defineChannelPluginEntry, and defineSetupPluginEntry"
 title: "Plugin entry points"
 sidebarTitle: "Entry Points"
 read_when:
-  - You need the exact type signature of defineToolPlugin, definePluginEntry, or defineChannelPluginEntry
+  - You need the exact type signature of defineToolPlugin, definePluginEntry, defineJsonRpcPluginEntry, or defineChannelPluginEntry
   - You want to understand registration mode (full vs setup vs CLI metadata)
   - You are looking up entry point options
 ---
@@ -129,6 +129,97 @@ export default definePluginEntry({
 - `configSchema` can be a function for lazy evaluation.
 - OpenClaw resolves and memoizes that schema on first access, so expensive schema
   builders only run once.
+
+## `defineJsonRpcPluginEntry`
+
+**Import:** `openclaw/plugin-sdk/json-rpc-plugin`
+
+For plugins whose runtime is written in Rust, Python, Go, or another language,
+but whose OpenClaw-facing descriptors can be declared statically in a small
+JavaScript entry file. The helper registers tools, hooks, HTTP routes, and
+Gateway methods synchronously, then lazily starts a child process and dispatches
+newline-framed JSON-RPC 2.0 requests over stdio when one of those surfaces is
+invoked.
+
+```typescript
+import { defineJsonRpcPluginEntry } from "openclaw/plugin-sdk/json-rpc-plugin";
+
+export default defineJsonRpcPluginEntry({
+  id: "rust-workflow",
+  name: "Rust Workflow",
+  description: "Runs workflow actions in a Rust binary.",
+  process: {
+    command: "./bin/rust-workflow",
+    args: ["--openclaw-json-rpc"],
+  },
+  registrations: [
+    {
+      type: "tool",
+      name: "rust_workflow_run",
+      description: "Run a workflow.",
+      parameters: {
+        type: "object",
+        properties: {
+          workflow: { type: "string" },
+        },
+        required: ["workflow"],
+      },
+    },
+    {
+      type: "hook",
+      hook: "gateway_start",
+      method: "rustWorkflow.gatewayStart",
+    },
+    {
+      type: "gatewayMethod",
+      method: "rustWorkflow.status",
+      scope: "operator.read",
+    },
+  ],
+});
+```
+
+The child receives one `openclaw.initialize` request before the first dispatch.
+After that, default methods are:
+
+| Registration type | Default child method      |
+| ----------------- | ------------------------- |
+| `tool`            | `openclaw.tool.execute`   |
+| `hook`            | `openclaw.hook.handle`    |
+| `httpRoute`       | `openclaw.http.handle`    |
+| `gatewayMethod`   | `openclaw.gateway.handle` |
+
+Hook registrations use typed plugin hook names such as `gateway_start`,
+`gateway_stop`, `before_tool_call`, or `agent_end`.
+
+Each request and response is one JSON object followed by `\n`. Responses follow
+normal JSON-RPC 2.0 shape: `{ "jsonrpc": "2.0", "id": 1, "result": ... }` or
+`{ "jsonrpc": "2.0", "id": 1, "error": { "message": "..." } }`.
+
+Static descriptors still belong in the JavaScript entry file because OpenClaw
+plugin registration is synchronous. Generate that file from Rust package
+metadata if you want one source of truth, but do not make the child process the
+runtime registration authority.
+
+Security and lifecycle notes:
+
+- The child process has the same trust level as installed native plugin code.
+- `process.inheritEnv` defaults to `true`; set it to `false` and pass explicit
+  `env` values when the child should not inherit the OpenClaw process
+  environment.
+- `openclaw.initialize` sends plugin identity and `pluginConfig`, not the full
+  OpenClaw config object.
+- HTTP routes and Gateway methods still use the existing OpenClaw
+  authentication, route auth, and operator-scope gates declared in the
+  descriptor.
+- HTTP route request bodies are capped at 1 MiB by default; set
+  `maxBodyBytes` per route when a larger plugin-owned payload is intentional.
+- The child is stopped on plugin disable/restart cleanup and on `gateway_stop`;
+  session reset/delete cleanup does not stop the shared process.
+
+Use native `definePluginEntry` or capability-specific SDK helpers for provider,
+channel, CLI, realtime, or other function-rich surfaces that are not
+JSON-compatible.
 
 ## `defineChannelPluginEntry`
 

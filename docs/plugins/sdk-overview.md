@@ -29,6 +29,7 @@ Always import from a specific subpath:
 ```typescript
 import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
 import { defineChannelPluginEntry } from "openclaw/plugin-sdk/channel-core";
+import { defineJsonRpcPluginEntry } from "openclaw/plugin-sdk/json-rpc-plugin";
 ```
 
 Each subpath is a small, self-contained module. This keeps startup fast and
@@ -174,6 +175,12 @@ guidance remain available to non-Codex prompt surfaces for compatibility.
 | `api.registerAgentToolResultMiddleware(...)`   | Runtime tool-result middleware          |
 | `api.registerMemoryPromptSupplement(builder)`  | Additive memory-adjacent prompt section |
 | `api.registerMemoryCorpusSupplement(adapter)`  | Additive memory search/read corpus      |
+
+Use `openclaw/plugin-sdk/json-rpc-plugin` when the implementation for a tool,
+hook, HTTP route, or Gateway method lives in a child process written in another
+language. The JavaScript entry still declares static descriptors synchronously;
+the helper dispatches calls to the child over newline-framed JSON-RPC on stdio.
+See [Plugin entry points](/plugins/sdk-entrypoints#definejsonrpcpluginentry).
 
 ### Host hooks for workflow plugins
 

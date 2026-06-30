@@ -561,6 +561,10 @@
       "types": "./dist/plugin-sdk/plugin-runtime.d.ts",
       "default": "./dist/plugin-sdk/plugin-runtime.js"
     },
+    "./plugin-sdk/json-rpc-plugin": {
+      "types": "./dist/plugin-sdk/json-rpc-plugin.d.ts",
+      "default": "./dist/plugin-sdk/json-rpc-plugin.js"
+    },
     "./plugin-sdk/skills-runtime": {
       "types": "./dist/plugin-sdk/skills-runtime.d.ts",
       "default": "./dist/plugin-sdk/skills-runtime.js"
